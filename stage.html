@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>阶段详情 — 枣畔·纪事</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+/* 详情页头图 */
+.stage-hero{position:relative; height:52vh; min-height:360px; overflow:hidden; display:flex; align-items:flex-end}
+.stage-hero img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+.stage-hero .veil{position:absolute; inset:0; background:linear-gradient(180deg, rgba(20,24,26,.28), rgba(20,24,26,.78))}
+.stage-hero .cap{position:relative; z-index:2; max-width:1180px; margin:0 auto; width:100%; padding:0 28px 42px; color:#f8f1df}
+.stage-hero .cap .no{display:inline-block; font-size:13px; letter-spacing:3px; border:1px solid rgba(248,241,223,.7); padding:3px 14px; border-radius:4px; margin-bottom:14px}
+.stage-hero .cap h1{font-size:clamp(30px,4.6vw,48px); letter-spacing:6px}
+.stage-hero .cap .meta{margin-top:10px; font-size:14px; letter-spacing:2px; opacity:.9}
+.stage-hero .cap .meta i{font-style:normal; margin-right:20px}
+/* 正文 */
+.stage-body{max-width:860px; margin:0 auto; padding:56px 28px 20px}
+.stage-body .lead{font-size:17px; line-height:2.1; color:var(--ink-soft); border-left:3px solid var(--zhusha); padding:6px 0 6px 22px; margin-bottom:34px; text-align:justify}
+.stage-body h2{font-size:22px; letter-spacing:3px; margin:44px 0 16px; position:relative; padding-left:18px}
+.stage-body h2::before{content:''; position:absolute; left:0; top:8px; bottom:8px; width:4px; background:var(--zhusha); border-radius:2px}
+.stage-body p{text-indent:2em; margin-bottom:14px; color:var(--ink-soft); line-height:2.05; text-align:justify; font-size:15.5px}
+/* 语音朗读条 */
+.reader{position:sticky; top:64px; z-index:80; margin:26px auto 0; max-width:860px; padding:0 28px}
+.reader .bar{display:flex; align-items:center; gap:14px; background:rgba(47,111,128,.94); color:#f8f1df; border-radius:40px; padding:10px 22px; box-shadow:0 12px 30px rgba(31,82,96,.35); flex-wrap:wrap}
+.reader .bar b{letter-spacing:2px; font-size:14px}
+.reader .bar button{color:#f8f1df; border:1px solid rgba(248,241,223,.6); border-radius:20px; padding:5px 16px; font-size:13px; transition:all .25s}
+.reader .bar button:hover{background:#f8f1df; color:var(--qingshi-deep)}
+.reader .bar button.play{background:var(--zhusha); border-color:var(--zhusha)}
+.reader .bar label{display:flex; align-items:center; gap:6px; font-size:12.5px}
+.reader .bar input[type=range]{width:110px; accent-color:#f8f1df}
+.reader .bar .st{font-size:12px; opacity:.85}
+/* 时间线小条 */
+.stage-tl{margin:34px 0 0; border:1px solid var(--line); border-radius:14px; background:rgba(255,253,245,.55); padding:22px 24px}
+.stage-tl h3{font-size:16px; letter-spacing:3px; margin-bottom:14px; color:var(--zhusha)}
+.stage-tl li{list-style:none; display:flex; gap:14px; font-size:14px; color:var(--ink-soft); padding:7px 0; border-bottom:1px dashed var(--line)}
+.stage-tl li:last-child{border-bottom:none}
+.stage-tl li b{flex:none; color:var(--qingshi-deep); font-weight:700; width:88px}
+/* 亮点 */
+.hl-box{display:flex; flex-wrap:wrap; gap:10px; margin-top:30px}
+.hl-box span{font-size:13px; border:1px solid var(--zhusha); color:var(--zhusha); padding:5px 16px; border-radius:22px; background:rgba(176,124,31,.06)}
+/* 现场影像 */
+.photos{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:26px}
+@media(max-width:860px){.photos{grid-template-columns:repeat(2,1fr)}}
+.photo{position:relative; border-radius:12px; overflow:hidden; border:1px solid var(--line); cursor:zoom-in; aspect-ratio:4/3; box-shadow:var(--shadow)}
+.photo img{width:100%; height:100%; object-fit:cover; transition:transform .6s}
+.photo:hover img{transform:scale(1.05)}
+.photo .cap2{position:absolute; left:0; right:0; bottom:0; padding:20px 10px 8px; background:linear-gradient(180deg,transparent,rgba(20,24,26,.7)); color:#f8f1df; font-size:12px; text-align:center}
+/* zoom 大图模态 */
+.zoom-modal{position:fixed; inset:0; z-index:1000; background:rgba(10,12,14,.92); display:none; align-items:center; justify-content:center; overflow:hidden; cursor:grab}
+.zoom-modal.open{display:flex}
+.zoom-modal img{max-width:92vw; max-height:88vh; transform-origin:center; user-select:none; transition:transform .1s linear}
+.zoom-modal .z-close{position:absolute; top:18px; right:26px; color:#f8f1df; font-size:30px; z-index:5}
+.zoom-modal .z-hint{position:absolute; bottom:18px; left:50%; transform:translateX(-50%); color:rgba(248,241,223,.75); font-size:13px; letter-spacing:2px}
+/* 相关档案 */
+.rel{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px}
+.rel a{display:flex; align-items:center; gap:12px; background:rgba(255,253,245,.6); border:1px solid var(--line); border-radius:12px; padding:10px 14px; font-size:13px; color:var(--ink-soft); transition:all .3s}
+.rel a:hover{transform:translateY(-3px); border-color:var(--zhusha); color:var(--zhusha)}
+.rel img{width:52px; height:38px; object-fit:cover; border-radius:6px; flex:none}
+/* 上下篇 */
+.pn{display:flex; justify-content:space-between; gap:16px; margin-top:56px}
+.pn a{flex:1; padding:18px 22px; border:1px solid var(--line); border-radius:12px; background:rgba(255,253,245,.55); font-size:14px; color:var(--ink-soft); transition:all .3s; text-align:center}
+.pn a:hover{border-color:var(--zhusha); color:var(--zhusha); transform:translateY(-3px)}
+.pn .none{opacity:.35; pointer-events:none}
+</style>
+</head>
+<body data-page="jishi">
+<nav id="zpNav" class="nav"></nav>
+
+<div id="zpStage"></div>
+<div class="zoom-modal" id="zoomModal">
+  <button class="z-close" id="zClose">✕</button>
+  <img id="zImg" alt="现场影像放大">
+  <div class="z-hint">滚轮缩放 · 拖拽平移 · 双击复位</div>
+</div>
+
+<footer id="zpFooter" class="footer"></footer>
+
+<script src="assets/js/data/site.js"></script>
+<script src="assets/js/data/stages.js"></script>
+<script src="assets/js/data/archives.js"></script>
+<script src="assets/js/art.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function () {
+  var S = window.ZP;
+  var id = parseInt(new URLSearchParams(location.search).get('id') || '1', 10);
+  var st = S.stages.find(function (s) { return s.id === id; }) || S.stages[0];
+  var idx = S.stages.indexOf(st);
+
+  /* 语音朗读 */
+  var readerHTML =
+    '<div class="reader"><div class="bar">' +
+    '<b>🎙 语音朗读工作日志</b>' +
+    '<button class="play" id="rdPlay">▶ 播放</button>' +
+    '<button id="rdStop">⏸ 暂停</button>' +
+    '<label>语速 <input type="range" id="rdRate" min="0.6" max="1.6" step="0.1" value="1"></label>' +
+    '<span class="st" id="rdState">就绪</span>' +
+    '</div></div>';
+
+  document.getElementById('zpStage').innerHTML =
+    '<header class="stage-hero"><img src="' + st.cover + '" alt="' + st.title + '"><div class="veil"></div>' +
+    '<div class="cap"><span class="no">阶段 ' + st.no + ' · ' + st.date + '</span><h1>' + st.title + '</h1>' +
+    '<div class="meta"><i>标签：' + st.tag + '</i><i>阶段序号：' + st.no + '</i></div></div></header>' +
+    readerHTML +
+    '<div class="stage-body">' +
+    '<div class="lead">' + st.summary + '</div>' +
+    '<div class="hl-box">' + st.highlights.map(function (h) { return '<span>' + h + '</span>'; }).join('') + '</div>' +
+    '<div class="stage-tl"><h3>阶段大事记</h3><ul>' + st.timeline.map(function (t) {
+      return '<li><b>' + t.date + '</b><span>' + t.text + '</span></li>';
+    }).join('') + '</ul></div>' +
+    '<h2>纪实图文</h2>' +
+    st.detail.map(function (sec) {
+      return '<h2>' + sec.h + '</h2>' + sec.paras.map(function (p) { return '<p>' + p + '</p>'; }).join('');
+    }).join('') +
+    '<h2>现场影像</h2><p style="text-indent:0;color:var(--ink-faint);font-size:13px">点击图片可放大查看细节（滚轮缩放、拖拽平移）。部分影像为 AI 水墨示意生成。</p>' +
+    '<div class="photos" id="zpPhotos"></div>' +
+    '<h2>关联档案</h2><div class="rel" id="zpRel"></div>' +
+    '<div class="pn">' +
+    (idx > 0 ? '<a href="stage.html?id=' + S.stages[idx - 1].id + '">← 上一阶段：' + S.stages[idx - 1].title + '</a>' : '<a class="none">已是第一个阶段</a>') +
+    (idx < S.stages.length - 1 ? '<a href="stage.html?id=' + S.stages[idx + 1].id + '">下一阶段：' + S.stages[idx + 1].title + ' →</a>' : '<a class="none">已是最后一个阶段</a>') +
+    '</div></div>';
+
+  /* 照片：封面 + 两张水墨档案示意 */
+  var arts = ['field', 'meet', 'cow', 'home', 'map', 'chart', 'board', 'flag', 'bin', 'doc', 'bridge', 'cart', 'money', 'water', 'road', 'tree', 'phone', 'award'];
+  var pick = [st.cover, S.art.render(arts[idx % arts.length]), S.art.render(arts[(idx * 3 + 5) % arts.length])];
+  var caps = [st.title + ' · 主影像（AI 水墨）', '工作场景 · 水墨示意', '工作场景 · 水墨示意'];
+  document.getElementById('zpPhotos').innerHTML = pick.map(function (src, i) {
+    return '<div class="photo" data-src="' + src + '"><img src="' + src + '" alt="影像' + (i + 1) + '" loading="lazy"><div class="cap2">' + caps[i] + '</div></div>';
+  }).join('');
+
+  var rel = S.archives.filter(function (a) { return a.stageId === st.id; }).slice(0, 6);
+  document.getElementById('zpRel').innerHTML = rel.length ? rel.map(function (a) {
+    return '<a href="dang-an.html?cat=' + a.cat + '"><img src="' + S.art.render(a.art) + '" alt=""><span>' + a.title + '</span></a>';
+  }).join('') : '<p style="font-size:13px;color:var(--ink-faint)">该阶段暂无独立档案条目。</p>';
+
+  /* zoom 交互：滚轮缩放 + 拖拽平移 + 双击复位 */
+  (function () {
+    var modal = document.getElementById('zoomModal');
+    var img = document.getElementById('zImg');
+    var scale = 1, tx = 0, ty = 0, drag = null;
+    function apply() { img.style.transform = 'scale(' + scale + ') translate(' + tx + 'px,' + ty + 'px)'; }
+    function open(src) { img.src = src; modal.classList.add('open'); scale = 1; tx = ty = 0; apply(); }
+    S.$$('.photo').forEach(function (p) {
+      p.addEventListener('click', function () { open(p.getAttribute('data-src')); });
+    });
+    document.getElementById('zClose').addEventListener('click', function () { modal.classList.remove('open'); });
+    modal.addEventListener('click', function (e) { if (e.target === modal) modal.classList.remove('open'); });
+    modal.addEventListener('wheel', function (e) {
+      e.preventDefault();
+      scale = Math.min(8, Math.max(0.5, scale + (e.deltaY < 0 ? 0.18 : -0.18)));
+      apply();
+    }, { passive: false });
+    modal.addEventListener('mousedown', function (e) { drag = { x: e.clientX - tx, y: e.clientY - ty }; img.style.cursor = 'grabbing'; });
+    window.addEventListener('mousemove', function (e) {
+      if (!drag) return; tx = e.clientX - drag.x; ty = e.clientY - drag.y; apply();
+    });
+    window.addEventListener('mouseup', function () { drag = null; img.style.cursor = ''; });
+    img.addEventListener('dblclick', function () { scale = 1; tx = ty = 0; apply(); });
+  })();
+
+  /* 朗读 */
+  var reading = false, paused = false, rdU = null;
+  var fullText = st.title + '。' + st.summary + '。' + st.detail.map(function (s) { return s.h + '。' + s.paras.join('。'); }).join('。');
+  function speak() {
+    speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(fullText);
+    u.lang = 'zh-CN';
+    var vs = speechSynthesis.getVoices().filter(function (v) { return v.lang && v.lang.indexOf('zh') === 0; });
+    if (vs.length) u.voice = vs[0];
+    u.rate = parseFloat(document.getElementById('rdRate').value);
+    u.pitch = 0.9;
+    u.onend = function () { reading = false; document.getElementById('rdState').textContent = '已播完'; document.getElementById('rdPlay').textContent = '▶ 播放'; };
+    speechSynthesis.speak(u);
+    reading = true; document.getElementById('rdState').textContent = '播放中…';
+  }
+  document.getElementById('rdPlay').addEventListener('click', function () {
+    if (reading) { speechSynthesis.resume(); document.getElementById('rdState').textContent = '播放中…'; return; }
+    speak(); this.textContent = '▶ 继续';
+  });
+  document.getElementById('rdStop').addEventListener('click', function () {
+    if (speechSynthesis.paused) { speechSynthesis.resume(); document.getElementById('rdState').textContent = '播放中…'; }
+    else { speechSynthesis.pause(); document.getElementById('rdState').textContent = '已暂停'; }
+  });
+  window.addEventListener('beforeunload', function () { speechSynthesis.cancel(); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>帮扶纪事 — 枣畔·纪事</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+/* 时间轴 */
+.tl{position:relative; max-width:1060px; margin:0 auto; padding:20px 0 10px}
+.tl::before{content:''; position:absolute; left:50%; top:0; bottom:0; width:2px; background:linear-gradient(180deg,transparent,var(--zhusha) 8%,var(--qingshi) 92%,transparent); transform:translateX(-50%); opacity:.5}
+@media(max-width:860px){.tl::before{left:16px}}
+.tl-item{position:relative; width:50%; padding:0 44px 56px; cursor:pointer}
+.tl-item:nth-child(odd){left:0; text-align:right}
+.tl-item:nth-child(even){left:50%; text-align:left}
+@media(max-width:860px){.tl-item,.tl-item:nth-child(even){left:0; width:100%; padding:0 0 40px 52px; text-align:left}}
+.tl-dot{position:absolute; top:14px; width:34px; height:34px; border-radius:50%; background:var(--paper2); border:2px solid var(--zhusha); display:grid; place-items:center; font-size:13px; color:var(--zhusha); z-index:2}
+.tl-item:nth-child(odd) .tl-dot{right:-17px}
+.tl-item:nth-child(even) .tl-dot{left:-17px}
+@media(max-width:860px){.tl-item .tl-dot,.tl-item:nth-child(odd) .tl-dot{left:0; right:auto}}
+.tl-card{display:block; background:rgba(255,253,245,.66); border:1px solid var(--line); border-radius:16px; overflow:hidden; box-shadow:var(--shadow); transition:transform .4s, box-shadow .4s; text-decoration:none; color:var(--ink)}
+.tl-card:hover{transform:translateY(-8px) scale(1.012); box-shadow:0 22px 48px rgba(42,36,29,.18)}
+.tl-card .cover{position:relative; height:190px; overflow:hidden}
+.tl-card .cover img{width:100%; height:100%; object-fit:cover; transition:transform .8s}
+.tl-card:hover .cover img{transform:scale(1.08)}
+.tl-card .cover .no{position:absolute; top:12px; left:14px; background:rgba(166,58,42,.9); color:#f8f1df; font-size:12px; letter-spacing:2px; padding:3px 12px; border-radius:4px}
+.tl-card .cover .dur{position:absolute; bottom:10px; right:12px; background:rgba(20,24,26,.6); color:#f8f1df; font-size:12px; padding:2px 10px; border-radius:4px}
+.tl-card .body{padding:18px 20px 20px}
+.tl-card .body h3{font-size:20px; letter-spacing:3px; margin-bottom:6px}
+.tl-card .body h3 em{font-style:normal; color:var(--zhusha); margin-right:8px; font-size:16px}
+.tl-card .body .tag{display:inline-block; font-size:12px; color:var(--qingshi-deep); background:rgba(47,111,128,.1); border-radius:12px; padding:1px 12px; margin-bottom:10px}
+.tl-card .body p{font-size:13.5px; color:var(--ink-soft); line-height:1.9; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden}
+.tl-card .hl{margin-top:12px; display:flex; flex-wrap:wrap; gap:6px}
+.tl-card .hl i{font-style:normal; font-size:11.5px; color:var(--ink-faint); border:1px solid var(--line); padding:2px 9px; border-radius:10px}
+.tl-card .more{margin-top:14px; font-size:13px; letter-spacing:2px; color:var(--zhusha)}
+.tl-card .more::after{content:' →'}
+/* 顶部节奏条 */
+.rhythm{display:flex; justify-content:center; gap:10px; margin-bottom:46px; flex-wrap:wrap}
+.rhythm a{font-size:13px; letter-spacing:1px; color:var(--ink-soft); border:1px solid var(--line-strong); border-radius:20px; padding:6px 16px; transition:all .3s; background:rgba(255,253,245,.5)}
+.rhythm a:hover{color:#f8f1df; background:var(--zhusha); border-color:var(--zhusha)}
+</style>
+</head>
+<body data-page="jishi">
+<nav id="zpNav" class="nav"></nav>
+
+<header class="page-hero">
+  <div class="kicker">八 阶 段 · 全 纪 录</div>
+  <h1>帮扶纪事</h1>
+  <div class="sub">从到岗履职到产业增收——枣畔村驻村帮扶工作的完整时间轴</div>
+  <div class="rule"></div>
+</header>
+
+<main class="wrap">
+  <div class="rhythm" id="zpRhythm"></div>
+  <div class="tl" id="zpTimeline"></div>
+
+  <div class="sec-title reveal"><div class="en">Visit Chronicle</div><h2>走进每一个阶段</h2><p>点击卡片，查看该阶段的纪实图文、现场影像与语音朗读</p></div>
+</main>
+
+<footer id="zpFooter" class="footer"></footer>
+
+<script src="assets/js/data/site.js"></script>
+<script src="assets/js/data/stages.js"></script>
+<script src="assets/js/data/archives.js"></script>
+<script src="assets/js/art.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function () {
+  var S = window.ZP;
+  var tl = document.getElementById('zpTimeline');
+  tl.innerHTML = S.stages.map(function (st, i) {
+    var side = i % 2 === 0 ? 'left' : 'right';
+    return '<div class="tl-item reveal" style="transition-delay:' + (i * 70) + 'ms" data-no="' + st.no + '">' +
+      '<div class="tl-dot">' + st.no + '</div>' +
+      '<a class="tl-card" href="stage.html?id=' + st.id + '">' +
+      '<div class="cover"><img src="' + st.cover + '" alt="' + st.title + '" loading="lazy"><span class="no">阶段' + st.no + '</span><span class="dur">' + st.date + '</span></div>' +
+      '<div class="body"><span class="tag">' + st.tag + '</span><h3><em>' + st.no + '</em>' + st.title + '</h3><p>' + st.summary + '</p>' +
+      '<div class="hl">' + st.highlights.map(function (h) { return '<i>' + h + '</i>'; }).join('') + '</div>' +
+      '<div class="more">进入阶段详情</div></div></a></div>';
+  }).join('');
+
+  document.getElementById('zpRhythm').innerHTML = S.stages.map(function (st) {
+    return '<a href="stage.html?id=' + st.id + '">' + st.no + ' · ' + st.title + '</a>';
+  }).join('');
+})();
+</script>
+</body>
+</html>

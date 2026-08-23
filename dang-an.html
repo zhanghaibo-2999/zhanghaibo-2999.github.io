@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数字档案 — 枣畔·纪事</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+/* 筛选条 */
+.filters{display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:center; margin-bottom:34px}
+.filters .fgroup{display:flex; gap:6px; flex-wrap:wrap; align-items:center}
+.filters .fg-label{font-size:12.5px; color:var(--ink-faint); letter-spacing:2px; margin:0 4px}
+.chip{font-size:13px; color:var(--ink-soft); border:1px solid var(--line-strong); border-radius:20px; padding:5px 14px; transition:all .25s; background:rgba(255,253,245,.55)}
+.chip:hover{border-color:var(--zhusha); color:var(--zhusha)}
+.chip.on{background:var(--zhusha); color:#f8f1df; border-color:var(--zhusha)}
+/* 瀑布流 */
+.waterfall{columns:4 250px; column-gap:18px}
+@media(max-width:1100px){.waterfall{columns:3 220px}}
+@media(max-width:760px){.waterfall{columns:2 180px}}
+.arc{break-inside:avoid; margin-bottom:18px; perspective:1200px; cursor:pointer}
+.arc-in{position:relative; width:100%; height:310px; transform-style:preserve-3d; transition:transform .7s cubic-bezier(.4,.1,.2,1)}
+.arc.flip .arc-in{transform:rotateY(180deg)}
+.arc .face{position:absolute; inset:0; backface-visibility:hidden; border-radius:14px; overflow:hidden; border:1px solid var(--line-strong); box-shadow:var(--shadow)}
+.arc .front{background:var(--paper2)}
+.arc .front img{width:100%; height:168px; object-fit:cover}
+.arc .front .tt{padding:12px 14px; font-size:14px; letter-spacing:1px; line-height:1.7}
+.arc .front .meta{padding:0 14px 12px; font-size:11.5px; color:var(--ink-faint)}
+.arc .front .cat{position:absolute; top:10px; left:10px; font-size:11px; color:#f8f1df; background:rgba(166,58,42,.88); padding:2px 10px; border-radius:4px}
+.arc .front .date{position:absolute; top:10px; right:10px; font-size:11px; color:var(--ink); background:rgba(244,237,220,.85); padding:2px 8px; border-radius:4px}
+.arc .back{transform:rotateY(180deg); background:linear-gradient(165deg,#fffdf4,#efe6d0); padding:16px 16px; display:flex; flex-direction:column}
+.arc .back .bt{font-size:14.5px; letter-spacing:1px; line-height:1.7; color:var(--ink); margin-bottom:10px}
+.arc .back .kv{display:flex; gap:8px; font-size:12.5px; margin:4px 0; color:var(--ink-soft)}
+.arc .back .kv b{flex:none; width:60px; color:var(--ink-faint); font-weight:400}
+.arc .back .eff{margin-top:auto; padding-top:10px; border-top:1px dashed var(--line-strong); font-size:12.5px; color:var(--qingshi-deep); line-height:1.8}
+.arc .back .go{margin-top:8px; font-size:12px; color:var(--zhusha); letter-spacing:1px}
+.arc .back .go:hover{color:var(--zhusha)}
+.arc:hover .front{border-color:rgba(176,124,31,.55); box-shadow:0 0 0 1px rgba(176,124,31,.35), 0 18px 44px rgba(42,36,29,.18)}
+.arc:hover{transform:translateY(-4px)}
+.load-more{text-align:center; margin:34px 0}
+#zpSentinel{height:2px}
+.empty{text-align:center; padding:60px 0; color:var(--ink-faint); font-size:14px; letter-spacing:2px}
+.cat-chip-label{display:flex; gap:6px; align-items:center}
+</style>
+</head>
+<body data-page="dang-an">
+<nav id="zpNav" class="nav"></nav>
+
+<header class="page-hero">
+  <div class="kicker">40 项 · 每 一 项 都 是 见 证</div>
+  <h1>数字档案长廊</h1>
+  <div class="sub">走访照片 · 项目文档 · 会议纪要 · 帮扶成果 · 荣誉表彰 · 点击卡片翻转查看详情</div>
+  <div class="rule"></div>
+</header>
+
+<main class="wrap">
+  <div class="filters">
+    <span class="fg-label">阶 段</span>
+    <div class="fgroup" id="fStage"><button class="chip on" data-v="">全部</button></div>
+    <span class="fg-label">类 别</span>
+    <div class="fgroup" id="fCat"><button class="chip on" data-v="">全部</button></div>
+    <span class="fg-label">时 间</span>
+    <div class="fgroup" id="fTime"><button class="chip on" data-v="">全部</button></div>
+  </div>
+  <div class="waterfall" id="zpWaterfall"></div>
+  <div class="load-more"><button class="btn" id="zpMore">加载更多档案</button></div>
+  <div id="zpSentinel"></div>
+</main>
+
+<footer id="zpFooter" class="footer"></footer>
+
+<script src="assets/js/data/site.js"></script>
+<script src="assets/js/data/stages.js"></script>
+<script src="assets/js/data/archives.js"></script>
+<script src="assets/js/art.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function () {
+  var S = window.ZP;
+  var CATS = { walk: '走访照片', doc: '项目文档', meet: '会议纪要', result: '帮扶成果', award: '荣誉表彰' };
+  var state = { stage: '', cat: '', time: '', shown: 0, step: 10, list: [] };
+
+  /* 筛选条构建 */
+  document.getElementById('fStage').innerHTML += S.stages.map(function (s) {
+    return '<button class="chip" data-v="' + s.id + '">' + s.no + '</button>';
+  }).join('');
+  document.getElementById('fCat').innerHTML += Object.keys(CATS).map(function (k) {
+    return '<button class="chip" data-v="' + k + '">' + CATS[k] + '</button>';
+  }).join('');
+  var years = [];
+  S.archives.forEach(function (a) { var y = a.date.slice(0, 4); if (years.indexOf(y) < 0) years.push(y); });
+  years.sort();
+  document.getElementById('fTime').innerHTML += years.map(function (y) {
+    return '<button class="chip" data-v="' + y + '">' + y + ' 年</button>';
+  }).join('');
+
+  function bindChips(boxId, key) {
+    var box = document.getElementById(boxId);
+    box.addEventListener('click', function (e) {
+      var b = e.target.closest('.chip'); if (!b) return;
+      S.$$('.chip', box).forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      state[key] = b.getAttribute('data-v');
+      reset();
+    });
+  }
+  bindChips('fStage', 'stage'); bindChips('fCat', 'cat'); bindChips('fTime', 'time');
+
+  function filtered() {
+    return S.archives.filter(function (a) {
+      if (state.stage && a.stageId !== parseInt(state.stage, 10)) return false;
+      if (state.cat && a.cat !== state.cat) return false;
+      if (state.time && a.date.slice(0, 4) !== state.time) return false;
+      return true;
+    });
+  }
+
+  function cardHTML(a) {
+    var st = S.stages.find(function (s) { return s.id === a.stageId; });
+    return '<div class="arc reveal" data-id="' + a.id + '"><div class="arc-in">' +
+      '<div class="face front"><span class="cat">' + CATS[a.cat] + '</span><span class="date">' + a.date + '</span>' +
+      '<img src="' + S.art.render(a.art, a.id) + '" alt="' + a.title + '" loading="lazy">' +
+      '<div class="tt">' + a.title + '</div><div class="meta">' + S.site.village + ' · ' + a.place + '</div></div>' +
+      '<div class="face back"><div class="bt">' + a.title + '</div>' +
+      '<div class="kv"><b>时间</b><span>' + a.date + '</span></div>' +
+      '<div class="kv"><b>地点</b><span>' + a.place + '</span></div>' +
+      '<div class="kv"><b>人员</b><span>' + a.people + '</span></div>' +
+      '<div class="kv"><b>关联阶段</b><span>' + (st ? st.no + ' · ' + st.title : '—') + '</span></div>' +
+      '<div class="eff"><b>工作成效</b>：' + a.effect + '</div>' +
+      '<a class="go" href="stage.html?id=' + a.stageId + '">查看关联阶段 →</a></div></div></div>';
+  }
+
+  function renderBatch() {
+    var wf = document.getElementById('zpWaterfall');
+    var batch = state.list.slice(state.shown, state.shown + state.step);
+    wf.insertAdjacentHTML('beforeend', batch.map(cardHTML).join(''));
+    state.shown += batch.length;
+    S.reveal();
+    document.getElementById('zpMore').style.display = state.shown >= state.list.length ? 'none' : 'inline-flex';
+    S.$$('.arc', wf).forEach(function (c) {
+      c.addEventListener('click', function () { c.classList.toggle('flip'); });
+    });
+  }
+
+  function reset() {
+    state.list = filtered(); state.shown = 0;
+    document.getElementById('zpWaterfall').innerHTML = '';
+    if (!state.list.length) {
+      document.getElementById('zpWaterfall').innerHTML = '<div class="empty">— 暂无符合条件的档案 —</div>';
+      document.getElementById('zpMore').style.display = 'none';
+      return;
+    }
+    renderBatch();
+  }
+
+  /* URL 预筛（来自阶段详情页跳转） */
+  var qc = new URLSearchParams(location.search).get('cat');
+  if (qc && CATS[qc]) {
+    state.cat = qc;
+    var bt = document.querySelector('#fCat .chip[data-v="' + qc + '"]');
+    if (bt) { S.$$('#fCat .chip').forEach(function (x) { x.classList.remove('on'); }); bt.classList.add('on'); }
+  }
+
+  document.getElementById('zpMore').addEventListener('click', renderBatch);
+
+  /* 无限滚动（IntersectionObserver 哨兵） */
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (en) {
+        if (en.isIntersecting && state.shown < state.list.length) renderBatch();
+      });
+    }, { rootMargin: '400px' });
+    io.observe(document.getElementById('zpSentinel'));
+  }
+
+  reset();
+})();
+</script>
+</body>
+</html>

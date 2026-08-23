@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>互动地图 — 枣畔·纪事</title>
+<link rel="stylesheet" href="assets/lib/leaflet/leaflet.css">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+#map{width:100%; height:72vh; min-height:520px; border-radius:16px; border:1px solid var(--line-strong); box-shadow:var(--shadow); z-index:1}
+.legend{display:flex; flex-wrap:wrap; gap:14px; align-items:center; font-size:13px; color:var(--ink-soft)}
+.legend .it{display:flex; align-items:center; gap:6px}
+.legend .dot{width:12px;height:12px;border-radius:50%;display:inline-block}
+.legend .star{width:14px;height:14px;display:inline-block}
+.legend svg{display:block}
+.map-side{display:grid; grid-template-columns:1fr 340px; gap:18px; align-items:start}
+@media(max-width:900px){.map-side{grid-template-columns:1fr}}
+.map-info{background:rgba(255,253,245,.6); border:1px solid var(--line); border-radius:14px; padding:20px 22px}
+.map-info h3{font-size:16px; letter-spacing:2px; margin-bottom:10px; color:var(--zhusha)}
+.map-info p{font-size:13px; color:var(--ink-soft); line-height:2; text-align:justify}
+.map-info .kv{display:flex; gap:8px; font-size:13.5px; margin:3px 0}
+.map-info .kv b{flex:none; width:86px; color:var(--ink-faint); font-weight:400}
+.map-info .tip{margin-top:12px; font-size:12.5px; color:var(--ink-faint); border-top:1px dashed var(--line-strong); padding-top:10px}
+.marker-h{font-size:0}
+.star-ic{filter:drop-shadow(0 1px 2px rgba(42,36,29,.4))}
+.hex{clip-path:polygon(50% 0, 61% 25%, 88% 25%, 68% 46%, 79% 73%, 50% 56%, 21% 73%, 32% 46%, 12% 25%, 39% 25%)}
+.facility-ic{background:none; border:none}
+.facility-ic .box{width:30px;height:30px;border-radius:8px;background:rgba(166,58,42,.92);display:grid;place-items:center;color:#f8f1df;font-size:14px;border:1.5px solid rgba(248,241,223,.8);box-shadow:0 4px 10px rgba(42,36,29,.3);transform:rotate(-3deg)}
+.facility-ic .lab{font-size:11px; text-align:center; color:var(--ink); background:rgba(244,237,220,.88); border-radius:8px; padding:0 6px; margin-top:2px; letter-spacing:1px; box-shadow:0 2px 6px rgba(42,36,29,.2)}
+.full-btn{margin-left:auto}
+</style>
+</head>
+<body data-page="ditu">
+<nav id="zpNav" class="nav"></nav>
+
+<header class="page-hero">
+  <div class="kicker">144 户 · 一 图 尽 览</div>
+  <h1>互动地图</h1>
+  <div class="sub">枣畔村水墨舆图 · 点击脱贫户/监测户点位查看户况卡片</div>
+  <div class="rule"></div>
+</header>
+
+<main class="wrap">
+  <div class="map-toolbar">
+    <div class="grp">
+      <label><input type="checkbox" id="fRegular" checked> 常规户</label>
+      <label><input type="checkbox" id="fMonitored" checked> 脱贫户/监测户</label>
+      <label><input type="checkbox" id="fFacility" checked> 公共设施</label>
+    </div>
+    <div class="grp">
+      <label>按帮扶措施筛选
+        <select id="fMeasure">
+          <option value="">全部措施</option>
+          <option>代养牛入股</option><option>公益岗</option><option>产业奖补</option>
+          <option>务工补贴</option><option>医疗救助</option><option>教育资助</option>
+          <option>低保兜底</option><option>临时救助</option>
+        </select>
+      </label>
+    </div>
+    <button class="btn full-btn" id="zpFull">⛶ 全屏</button>
+  </div>
+
+  <div class="map-side">
+    <div id="map"></div>
+    <aside class="map-info">
+      <h3>读图说明</h3>
+      <div class="kv"><b>常规户</b><span>灰色圆点 · 133 户（点位为种子示意）</span></div>
+      <div class="kv"><b>脱贫户/监测户</b><span>赭黄六角星 · 11 户 27 人 · 点击查看户况</span></div>
+      <div class="kv"><b>公共设施</b><span>朱砂标识：村委会 / 文化广场 / 卫生室 / 代养牛场 / 饮水工程</span></div>
+      <p style="margin-top:12px">每颗六角星背后，都有一份"两表一图"台账、一套一户一策的帮扶措施，以及驻村工作队一年 5 次以上的入户足迹。</p>
+      <div class="tip">提示：点位坐标为种子示例数据，正式使用请以实测坐标与真实台账替换。</div>
+    </aside>
+  </div>
+
+  <div class="sec-title reveal"><div class="en">Household Details</div><h2>监测户户况速览</h2><p>11 户监测对象一览 · 点击地图六角星查看完整卡片</p></div>
+  <div id="zpCards" class="stats" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))"></div>
+</main>
+
+<footer id="zpFooter" class="footer"></footer>
+
+<script src="assets/lib/leaflet/leaflet.js"></script>
+<script src="assets/js/data/site.js"></script>
+<script src="assets/js/data/households.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function () {
+  var S = window.ZP;
+
+  /* 底图投影：SVG 0-1000 × 0-700 → 经纬度线性映射 */
+  var b = S.map.bounds;
+  var lat0 = b[0][0], lng0 = b[0][1], lat1 = b[1][0], lng1 = b[1][1];
+  function toLatLng(x, y) { return [lat0 + (lat1 - lat0) * y / 700, lng0 + (lng1 - lng0) * x / 1000]; }
+
+  var map = L.map('map', { zoomControl: true, minZoom: 13, maxZoom: 18 });
+  map.setView(S.map.view, S.map.zoom);
+  L.imageOverlay('assets/img/ink-map.svg', b, { opacity: 1, interactive: false }).addTo(map);
+
+  /* ---- 144 户点位 ---- */
+  var monitored = S.households.highlighted;
+  var regular = S.households.genRegularPoints(20260715);
+
+  function starIcon() {
+    return L.divIcon({ className: 'marker-h', html: '<svg class="star-ic" width="26" height="26" viewBox="0 0 26 26"><path class="hex" d="M13 0 L15.9 6.4 L22.6 6.4 L17.4 11.6 L19.8 18 L13 14.4 L6.2 18 L8.6 11.6 L3.4 6.4 L10.1 6.4 Z" fill="#b07c1f" stroke="#6f4d0e" stroke-width="1.2"/></svg>', iconSize: [26, 26], iconAnchor: [13, 13] });
+  }
+  function dotIcon() {
+    return L.divIcon({ className: 'marker-h', html: '<svg width="12" height="12"><circle cx="6" cy="6" r="4.6" fill="#8a8071" opacity=".85" stroke="#f4eddc" stroke-width="1"/></svg>', iconSize: [12, 12], iconAnchor: [6, 6] });
+  }
+  function facilityIcon(ch, label) {
+    return L.divIcon({ className: 'facility-ic', html: '<div class="box">' + ch + '</div><div class="lab">' + label + '</div>', iconSize: [44, 46], iconAnchor: [22, 40] });
+  }
+
+  var layRegular = L.layerGroup(); var layMon = L.layerGroup(); var layFac = L.layerGroup();
+
+  regular.forEach(function (p) {
+    layRegular.addLayer(L.marker(toLatLng(p.x, p.y), { icon: dotIcon() }));
+  });
+
+  monitored.forEach(function (m) {
+    var latlng = toLatLng(m.x, m.y);
+    var pop = buildPopup(m);
+    var mk = L.marker(latlng, { icon: starIcon() }).bindPopup(pop, { maxWidth: 340 });
+    mk._zpData = m;
+    layMon.addLayer(mk);
+  });
+
+  var facilities = [
+    [560, 268, '委', '村委会'], [710, 262, '场', '文化广场'], [864, 332, '医', '卫生室'],
+    [544, 448, '牛', '代养牛场'], [656, 462, '水', '饮水工程']
+  ];
+  facilities.forEach(function (f) {
+    layFac.addLayer(L.marker(toLatLng(f[0], f[1]), { icon: facilityIcon(f[2], f[3]) }));
+  });
+
+  layRegular.addTo(map); layMon.addTo(map); layFac.addTo(map);
+
+  /* 图例与筛选 */
+  function applyFilter() {
+    var showR = document.getElementById('fRegular').checked;
+    var showM = document.getElementById('fMonitored').checked;
+    var showF = document.getElementById('fFacility').checked;
+    var mv = document.getElementById('fMeasure').value;
+    if (showR && !map.hasLayer(layRegular)) layRegular.addTo(map); else if (!showR && map.hasLayer(layRegular)) map.removeLayer(layRegular);
+    if (!showM && map.hasLayer(layMon)) map.removeLayer(layMon);
+    if (showM) {
+      layMon.getLayers().forEach(function (mk) {
+        var d = mk._zpData;
+        var match = !mv || (d.measures || []).some(function (me) { return me.indexOf(mv) > -1; });
+        if (match) { if (!map.hasLayer(layMon)) layMon.addTo(map); mk.addTo(layMon); }
+        else layMon.removeLayer(mk);
+      });
+    }
+    if (showF && !map.hasLayer(layFac)) layFac.addTo(map); else if (!showF && map.hasLayer(layFac)) map.removeLayer(layFac);
+  }
+  ['fRegular', 'fMonitored', 'fFacility', 'fMeasure'].forEach(function (id) {
+    document.getElementById(id).addEventListener('change', applyFilter);
+  });
+
+  /* 全屏 */
+  document.getElementById('zpFull').addEventListener('click', function () {
+    var el = document.getElementById('map');
+    if (document.fullscreenElement) document.exitFullscreen();
+    else (el.requestFullscreen || el.webkitRequestFullscreen || function () {}).call(el);
+  });
+
+  /* 户况卡片弹窗内容 */
+  function buildPopup(m) {
+    var html = '<div class="ink-popup">' +
+      '<h4>' + m.name + '</h4>' +
+      '<div class="kv"><b>户类型</b><span>' + m.type + '</span></div>' +
+      '<div class="kv"><b>家庭人口</b><span>' + m.pop + '</span></div>' +
+      '<div class="kv"><b>致贫原因</b><span>' + m.cause + '</span></div>' +
+      '<div class="kv"><b>脱贫年度</b><span>' + m.year + '</span></div>' +
+      '<div style="margin-top:8px"><b style="font-size:13px">帮扶措施</b><br>' +
+      m.measures.map(function (x) { return '<span class="tag">' + x + '</span>'; }).join('') + '</div>' +
+      '<div style="margin-top:8px"><b style="font-size:13px">收入变化趋势（2023→2026）</b><br><canvas id="cv-' + m.id + '" width="300" height="70"></canvas></div>' +
+      '<div class="visits"><b style="font-size:13px">最近走访记录</b><ul>' +
+      m.visits.map(function (v) { return '<li><b>' + v.d + '</b> — ' + v.item + '</li>'; }).join('') +
+      '</ul></div></div>';
+    return html;
+  }
+  map.on('popupopen', function (e) {
+    var mk = e.popup._source;
+    if (mk._zpData) {
+      var cv = document.getElementById('cv-' + mk._zpData.id);
+      if (cv) setTimeout(function () { S.inkChart(cv, mk._zpData.income, { labels: ['2023', '2024', '2025', '2026'] }); }, 60);
+    }
+  });
+
+  /* 侧边户况卡片 */
+  document.getElementById('zpCards').innerHTML = monitored.map(function (m, i) {
+    return '<div class="stat reveal" style="transition-delay:' + (i * 60) + 'ms; text-align:left; padding:22px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:16px">' + m.name + '</b>' +
+      '<span style="font-size:11.5px;color:#b07c1f;border:1px solid #b07c1f;border-radius:10px;padding:1px 8px">' + m.type + '</span></div>' +
+      '<div class="kv" style="margin-top:10px"><b>' + m.cause + '</b></div>' +
+      '<div class="kv">' + m.measures.slice(0, 2).map(function (x) { return '<span class="tag">' + x + '</span>'; }).join('') + '</div>' +
+      '<div class="kv" style="font-size:12px;color:var(--ink-faint)">2023→2026 人均收入：' + m.income.join(' → ') + ' 元</div>' +
+      '</div>';
+  }).join('');
+
+  /* 图例条 */
+  var lg = document.createElement('div');
+  lg.className = 'legend';
+  lg.style.cssText = 'position:absolute;z-index:500;bottom:24px;left:24px;background:rgba(255,252,242,.92);border:1px solid var(--line);border-radius:10px;padding:10px 14px;box-shadow:var(--shadow)';
+  lg.innerHTML =
+    '<div class="it"><span class="dot" style="background:#8a8071"></span>常规户 133</div>' +
+    '<div class="it"><span class="star"><svg width="14" height="14"><path d="M7 0 L8.6 3.4 L12.2 3.4 L9.4 5.6 L10.5 9 L7 7.2 L3.5 9 L4.6 5.6 L1.8 3.4 L5.4 3.4 Z" fill="#b07c1f"/></svg></span>脱贫户/监测户 11</div>' +
+    '<div class="it"><span class="dot" style="background:#a63a2a;border-radius:4px"></span>公共设施</div>';
+  document.getElementById('map').appendChild(lg);
+})();
+</script>
+</body>
+</html>

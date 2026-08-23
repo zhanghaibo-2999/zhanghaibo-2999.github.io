@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>帮扶档案馆 — 枣畔·纪事</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+.vault{display:grid; grid-template-columns:1fr 1fr; gap:24px}
+@media(max-width:900px){.vault{grid-template-columns:1fr}}
+.vitem{position:relative; border:1px solid var(--line-strong); border-radius:18px; overflow:hidden; background:linear-gradient(168deg,#fffdf4,#ece1c8); box-shadow:var(--shadow); display:flex; flex-direction:column; transition:transform .35s}
+.vitem:hover{transform:translateY(-6px)}
+.vitem .head{position:relative; padding:30px 30px 22px; color:#f8f1df}
+.vitem .head::before{content:''; position:absolute; inset:0; opacity:.16}
+.vitem.doc .head{background:linear-gradient(120deg,#2f6f80,#1f5260)}
+.vitem.ppt .head{background:linear-gradient(120deg,#8a2f24,#5c1f18)}
+.vitem .head h2{font-size:22px; letter-spacing:2px}
+.vitem .head .desc{margin-top:8px; font-size:13px; opacity:.9; line-height:1.9}
+.vitem .meta{padding:16px 30px 6px; font-size:12.5px; color:var(--ink-faint); line-height:2}
+.vitem .meta b{color:var(--ink-soft)}
+.vitem .acts{display:flex; gap:12px; padding:18px 30px 30px; flex-wrap:wrap}
+.vitem .acts .btn{flex:1; justify-content:center; min-width:150px}
+.vitem .badge{position:absolute; top:16px; right:16px; font-size:11px; letter-spacing:2px; border:1px solid rgba(248,241,223,.7); border-radius:4px; padding:2px 10px}
+/* 章节预览 */
+.chapters{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; padding:0 30px 26px}
+.chapter{background:rgba(255,253,245,.7); border:1px solid var(--line); border-radius:10px; padding:12px 14px; font-size:12.5px; color:var(--ink-soft); line-height:1.8}
+.chapter b{display:block; color:var(--zhusha); font-size:13.5px; letter-spacing:1px; margin-bottom:4px}
+/* 数据说明 */
+.vault-note{margin-top:30px; border:1px dashed var(--line-strong); border-radius:14px; padding:22px 26px; background:rgba(255,253,245,.5)}
+.vault-note h3{font-size:16px; letter-spacing:2px; color:var(--zhusha); margin-bottom:10px}
+.vault-note p{font-size:13px; color:var(--ink-soft); line-height:2; text-align:justify}
+.vault-note ul{margin:8px 0 0 20px; font-size:13px; color:var(--ink-soft); line-height:2}
+.preview-frame{margin-top:24px; border:1px solid var(--line); border-radius:16px; overflow:hidden; box-shadow:var(--shadow); background:#fff}
+.preview-frame iframe{width:100%; height:640px; border:none; display:block}
+.preview-frame .pf-head{display:flex; align-items:center; justify-content:space-between; padding:12px 20px; background:var(--paper2); border-bottom:1px solid var(--line); font-size:14px; letter-spacing:2px}
+</style>
+</head>
+<body data-page="danganguan">
+<nav id="zpNav" class="nav"></nav>
+
+<header class="page-hero">
+  <div class="kicker">讲 义 · 汇 报 · 一 站 下 载</div>
+  <h1>帮扶档案馆</h1>
+  <div class="sub">《枣畔村帮扶工作纪实》Word 讲义与配套汇报 PPT · 支持下载与在线预览</div>
+  <div class="rule"></div>
+</header>
+
+<main class="wrap">
+  <div class="vault">
+    <div class="vitem doc reveal">
+      <div class="head"><span class="badge">WORD 讲义</span>
+        <h2>《枣畔村帮扶工作纪实》</h2>
+        <div class="desc">8000 余字 · 六章架构 · 配数据图表<br>村情概况 / 帮扶历程 / 重点项目 / 成效数据 / 典型案例 / 经验总结</div>
+      </div>
+      <div class="chapters">
+        <div class="chapter"><b>第一章</b>村情概况：地理人口、资源禀赋、发展基础</div>
+        <div class="chapter"><b>第二章</b>帮扶历程：八个阶段完整时间线</div>
+        <div class="chapter"><b>第三章</b>重点项目：代养牛、防返贫监测、一键报贫</div>
+        <div class="chapter"><b>第四章</b>成效数据：收入变化、产业发展、设施改善</div>
+        <div class="chapter"><b>第五章</b>典型案例：三则真实帮扶故事</div>
+        <div class="chapter"><b>第六章</b>经验总结：机制、方法、启示</div>
+      </div>
+      <div class="acts">
+        <a class="btn btn-qing" href="下载/枣畔村帮扶工作纪实.docx">⬇ 下载 Word 讲义</a>
+        <a class="btn" href="assets/preview/讲义预览.html" target="_blank">📖 在线预览</a>
+      </div>
+    </div>
+
+    <div class="vitem ppt reveal">
+      <div class="head"><span class="badge">汇报 PPT</span>
+        <h2>《枣畔村驻村帮扶工作汇报》</h2>
+        <div class="desc">20+ 页 · 统一视觉模板 · 数据看板<br>封面 / 目录 / 村情 / 八阶段纪事 / 数据看板 / 荣誉成果 / 下一步计划 / 致谢</div>
+      </div>
+      <div class="chapters">
+        <div class="chapter"><b>P01-02</b>封面与目录</div>
+        <div class="chapter"><b>P03-04</b>村情概况</div>
+        <div class="chapter"><b>P05-13</b>历程总览与八阶段纪事</div>
+        <div class="chapter"><b>P14-16</b>成效数据看板</div>
+        <div class="chapter"><b>P17-20</b>荣誉成果与典型案例</div>
+        <div class="chapter"><b>P21-22</b>下一步计划与致谢</div>
+      </div>
+      <div class="acts">
+        <a class="btn btn-solid" href="下载/枣畔村帮扶工作汇报.pptx">⬇ 下载汇报 PPT</a>
+        <a class="btn" href="assets/preview/汇报预览.html" target="_blank">📊 在线预览</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="vault-note reveal">
+    <h3>档案说明</h3>
+    <p>本馆两份材料由「枣畔·纪事」展馆同步生成，内容与站内八个阶段、四十项档案数据同源。均为种子示例数据，正文中涉及的具体数字、人名（化名）与案例情节，请在使用前以真实台账逐项核对替换。</p>
+    <p>引用建议：正式场合引用数据请以村委台账、监测系统与公示记录为准；本馆材料可作为展陈、宣传与汇报的底稿。</p>
+  </div>
+
+  <div class="sec-title reveal"><div class="en">Online Preview</div><h2>在线预览</h2><p>无需下载，直接在线阅读讲义与汇报</p></div>
+  <div class="preview-frame">
+    <div class="pf-head"><span>《枣畔村帮扶工作纪实》在线预览</span><a href="assets/preview/讲义预览.html" target="_blank">新窗口打开 ↗</a></div>
+    <iframe src="assets/preview/讲义预览.html" title="讲义预览"></iframe>
+  </div>
+</main>
+
+<footer id="zpFooter" class="footer"></footer>
+
+<script src="assets/js/data/site.js"></script>
+<script src="assets/js/common.js"></script>
+</body>
+</html>

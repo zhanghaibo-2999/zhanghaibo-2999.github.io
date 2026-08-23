@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>枣畔·纪事 — 驻村帮扶工作数字展馆</title>
+<meta name="description" content="山西省黎城县东阳关镇枣畔村驻村帮扶工作数字展馆">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+/* ---------- 首页专属：全屏视差开场 ---------- */
+.hero{position:relative; height:100vh; min-height:620px; overflow:hidden; background:#1d2326}
+.hero-bg{position:absolute; inset:0; opacity:0; background-size:cover; background-position:center; animation:season 20s ease-in-out infinite; will-change:opacity,transform}
+#bz1{background-image:url('assets/img/season-spring.png'); animation-delay:0s}
+#bz2{background-image:url('assets/img/season-summer.png'); animation-delay:5s}
+#bz3{background-image:url('assets/img/season-autumn.png'); animation-delay:10s}
+#bz4{background-image:url('assets/img/season-winter.png'); animation-delay:15s}
+@keyframes season{0%,20%{opacity:0} 5%,15%{opacity:1} 25%,100%{opacity:0}}
+.hero-veil{position:absolute; inset:0; background:linear-gradient(180deg, rgba(20,24,26,.30) 0%, rgba(20,24,26,.12) 45%, rgba(20,24,26,.62) 100%); z-index:2}
+#zpParticles{position:absolute; inset:0; z-index:3; pointer-events:none}
+.hero-inner{position:relative; z-index:4; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:0 24px; will-change:transform}
+.hero-seal{width:76px;height:76px;border:2px solid rgba(238,216,150,.9); border-radius:12px; display:grid;place-items:center; transform:rotate(-4deg); color:#eed896; font-size:40px; letter-spacing:0; box-shadow:0 0 40px rgba(201,162,39,.25); margin-bottom:26px; background:rgba(166,58,42,.28)}
+.hero-title{
+  font-size:clamp(58px, 11vw, 132px); font-weight:700; letter-spacing:.14em; line-height:1.12; text-indent:.14em;
+  background:linear-gradient(180deg,#f6e2a0 8%, #d9b64a 42%, #9a7b2e 78%, #e8ce82 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  filter:drop-shadow(0 3px 14px rgba(0,0,0,.45)); user-select:none;
+}
+.hero-sub{margin-top:18px; font-size:clamp(15px,2vw,20px); letter-spacing:.72em; text-indent:.72em; color:#bcd3da; text-shadow:0 2px 10px rgba(0,0,0,.5)}
+.hero-line{width:min(420px,70vw); height:1px; margin:34px auto 0; background:linear-gradient(90deg,transparent,rgba(238,216,150,.8),transparent)}
+.hero-quote{margin-top:26px; font-size:14px; letter-spacing:.35em; text-indent:.35em; color:rgba(238,216,150,.75)}
+.scroll-hint{position:absolute; bottom:26px; left:50%; transform:translateX(-50%); text-align:center; color:rgba(248,241,223,.85); font-size:12px; letter-spacing:4px; z-index:40}
+.scroll-hint .mouse{width:24px;height:38px;border:1.5px solid rgba(248,241,223,.8);border-radius:14px;margin:8px auto 0;position:relative}
+.scroll-hint .mouse::after{content:'';position:absolute;left:50%;top:7px;width:3px;height:8px;margin-left:-1.5px;border-radius:2px;background:rgba(248,241,223,.9);animation:wheel 1.8s ease-in-out infinite}
+@keyframes wheel{0%{transform:translateY(0);opacity:1}70%{transform:translateY(12px);opacity:0}100%{opacity:0}}
+
+/* ---------- 序言 ---------- */
+.prologue{max-width:760px; margin:0 auto; padding:90px 28px 20px; text-align:center; position:relative}
+.prologue .drop{font-size:52px; float:left; line-height:1; color:var(--zhusha); margin:6px 12px 0 0}
+.prologue p{font-size:16.5px; text-align:left; text-indent:2em; color:var(--ink-soft)}
+.prologue .sign{margin-top:26px; text-align:right; font-size:14px; color:var(--ink-faint); letter-spacing:2px}
+.prologue .sign b{color:var(--zhusha)}
+
+/* ---------- 数据看板 ---------- */
+.stats{display:grid; grid-template-columns:repeat(3,1fr); gap:22px}
+@media(max-width:860px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{text-align:center; padding:34px 18px; border-radius:14px; background:rgba(255,253,245,.62); border:1px solid var(--line); box-shadow:var(--shadow); position:relative; overflow:hidden; transition:transform .35s}
+.stat:hover{transform:translateY(-6px)}
+.stat::before{content:''; position:absolute; left:0; top:0; right:0; height:3px; background:linear-gradient(90deg,transparent,var(--zhusha),transparent)}
+.stat .v{font-size:clamp(30px,4vw,44px); font-weight:700; color:var(--zhusha); font-family:var(--serif)}
+.stat .v i{font-style:normal; font-size:.45em; color:var(--ink-faint); margin-left:4px}
+.stat .l{margin-top:6px; font-size:15px; letter-spacing:3px}
+.stat .n{margin-top:8px; font-size:12px; color:var(--ink-faint); line-height:1.7}
+
+/* ---------- 驻村足迹路线 ---------- */
+.route-box{position:relative; border:1px solid var(--line); border-radius:16px; overflow:hidden; background:linear-gradient(180deg,#f7f1e2,#efe6d0); box-shadow:var(--shadow)}
+.route-svg{display:block; width:100%; height:auto}
+.route-svg .rpath{stroke-dasharray:1400; stroke-dashoffset:1400; transition:stroke-dashoffset 3.2s cubic-bezier(.6,.05,.3,.95)}
+.route-svg .rmove{opacity:0; transition:opacity .6s}
+.route-box.done .rpath{stroke-dashoffset:0}
+.route-box.done .rmove{opacity:1}
+.route-box.done .rmove{animation:car 3.2s ease-in-out}
+@keyframes car{0%{offset-distance:0%}100%{offset-distance:100%}}
+.route-nodes{display:flex; justify-content:space-between; padding:18px 34px 24px; position:relative}
+.route-nodes .node{text-align:center; width:120px}
+.route-nodes .node b{display:block; font-size:15px; letter-spacing:1px; color:var(--ink)}
+.route-nodes .node span{font-size:12px; color:var(--ink-faint)}
+.route-nodes .node i{display:inline-block; width:34px;height:34px; line-height:34px; border-radius:50%; background:var(--paper2); border:1.5px solid var(--zhusha); color:var(--zhusha); font-style:normal; margin-bottom:8px; font-size:14px}
+.route-legend{text-align:center; font-size:12px; color:var(--ink-faint); padding-bottom:20px; letter-spacing:2px}
+
+/* ---------- 四季流转 ---------- */
+.seasons{display:grid; grid-template-columns:repeat(4,1fr); gap:18px}
+@media(max-width:860px){.seasons{grid-template-columns:repeat(2,1fr)}}
+.season{position:relative; border-radius:14px; overflow:hidden; border:1px solid var(--line); box-shadow:var(--shadow); aspect-ratio:4/5; cursor:pointer; transition:transform .4s}
+.season:hover{transform:translateY(-8px)}
+.season img{width:100%; height:100%; object-fit:cover; transition:transform .8s}
+.season:hover img{transform:scale(1.07)}
+.season .cap{position:absolute; left:0; right:0; bottom:0; padding:34px 16px 14px; background:linear-gradient(180deg,transparent,rgba(20,24,26,.72)); color:#f8f1df; font-size:17px; letter-spacing:6px; text-align:center}
+
+/* ---------- 板块入口 ---------- */
+.entry{display:grid; grid-template-columns:repeat(4,1fr); gap:18px}
+@media(max-width:860px){.entry{grid-template-columns:repeat(2,1fr)}}
+.entry-card{position:relative; padding:34px 22px 26px; border-radius:14px; text-align:center; overflow:hidden; text-decoration:none; color:var(--ink)}
+.entry-card .ic{width:64px;height:64px;margin:0 auto 16px;border-radius:50%;display:grid;place-items:center;font-size:26px;background:var(--paper2);border:1px solid var(--line-strong)}
+.entry-card h3{font-size:18px; letter-spacing:3px}
+.entry-card p{margin-top:8px; font-size:12.5px; color:var(--ink-faint); line-height:1.8}
+.entry-card::after{content:''; position:absolute; left:0; right:0; bottom:0; height:3px; background:var(--zhusha); transform:scaleX(0); transition:transform .4s; transform-origin:left}
+.entry-card:hover::after{transform:scaleX(1)}
+.entry-card.e1 .ic{color:var(--zhusha)} .entry-card.e2 .ic{color:var(--qingshi)}
+.entry-card.e3 .ic{color:var(--jade)} .entry-card.e4 .ic{color:var(--zhusha)}
+
+/* ---------- 尾言 ---------- */
+.epilogue{max-width:760px;margin:90px auto 0;padding:44px 30px;text-align:center;border:1px solid var(--line);border-radius:16px;background:rgba(255,253,245,.55)}
+.epilogue .q{font-size:17px; letter-spacing:2px; color:var(--ink-soft); line-height:2.2}
+.epilogue .s{margin-top:18px; font-size:13px; color:var(--ink-faint); letter-spacing:3px}
+</style>
+</head>
+<body data-page="index">
+
+<header class="hero">
+  <div class="hero-bg" id="bz1"></div>
+  <div class="hero-bg" id="bz2"></div>
+  <div class="hero-bg" id="bz3"></div>
+  <div class="hero-bg" id="bz4"></div>
+  <div class="hero-veil"></div>
+  <canvas id="zpParticles"></canvas>
+  <div class="hero-inner" id="heroInner">
+    <div class="hero-seal">畔</div>
+    <h1 class="hero-title">枣畔·纪事</h1>
+    <div class="hero-sub">驻村帮扶工作数字展馆</div>
+    <div class="hero-line"></div>
+    <div class="hero-quote">太行山麓 · 东阳关畔 · 144 户乡亲的答卷</div>
+  </div>
+  <div class="scroll-hint">向下探索<span class="mouse"></span></div>
+</header>
+
+<nav id="zpNav" class="nav"></nav>
+
+<main>
+  <section class="prologue reveal">
+    <p><span class="drop">枣</span>畔村，藏在太行山东麓褶皱里的一个小村落。2024 年 7 月 15 日，驻村工作队在雨后初晴的晨光里进村，从此，144 户 386 口人的日子，便与我们有了最紧密的联结。</p>
+    <p>两年时间，七百多个日夜——我们走过村东的梯田、敲过西沟的家门，把 11 户 27 人监测对象的冷暖记在心间；我们把代养牛从纸面方案牵进了棚舍，把"一键报贫"的流程贴上了公开栏。这座展馆，记录的正是这些泥土里的脚印：八个阶段、四十项档案、一百四十四个户位，以及每一个普通日子里的认真作答。</p>
+    <div class="sign">—— 枣畔村驻村第一书记 · 张海波</div>
+  </section>
+
+  <section class="wrap">
+    <div class="sec-title reveal"><div class="en">Data Snapshot</div><h2>帮扶数据看板</h2><p>数字背后，是两年来的持续耕耘</p></div>
+    <div class="stats" id="zpStats"></div>
+  </section>
+
+  <section class="wrap">
+    <div class="sec-title reveal"><div class="en">Footprints</div><h2>驻村足迹</h2><p>从县城出发，进山，进村，进家门</p></div>
+    <div class="route-box reveal" id="routeBox">
+      <svg class="route-svg" viewBox="0 0 1000 340" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><circle r="3" fill="#a63a2a"/></marker></defs>
+        <path d="M0 240 C220 210 300 150 470 140 C640 130 760 90 1000 52" fill="none" stroke="#8a7a5c" stroke-width="2" stroke-dasharray="1 7" opacity=".5"/>
+        <path class="rpath" d="M110 268 C300 236 380 170 520 158 C680 144 780 104 950 66" fill="none" stroke="#a63a2a" stroke-width="3.4" stroke-linecap="round"/>
+        <circle class="rmove" r="6" fill="#c9a227" stroke="#f8f1df" stroke-width="2" style="offset-path:path('M110 268 C300 236 380 170 520 158 C680 144 780 104 950 66')">
+          <animateMotion dur="3.2s" repeatCount="indefinite" path="M110 268 C300 236 380 170 520 158 C680 144 780 104 950 66"/>
+        </circle>
+        <g font-family="serif" text-anchor="middle">
+          <circle cx="110" cy="268" r="17" fill="#f4eddc" stroke="#b07c1f" stroke-width="2.4"/><text x="110" y="274" font-size="16" fill="#a63a2a">城</text>
+          <circle cx="520" cy="158" r="17" fill="#f4eddc" stroke="#b07c1f" stroke-width="2.4"/><text x="520" y="164" font-size="16" fill="#a63a2a">镇</text>
+          <circle cx="950" cy="66" r="20" fill="#a63a2a" stroke="#f8f1df" stroke-width="2.4"/><text x="950" y="73" font-size="16" fill="#f8f1df">村</text>
+        </g>
+        <g font-family="serif" fill="#5b5347" font-size="15" letter-spacing="2">
+          <text x="110" y="312">黎城县城</text><text x="520" y="196">东阳关镇</text><text x="950" y="30">枣畔村</text>
+        </g>
+        <g font-family="serif" fill="#8a8071" font-size="12">
+          <text x="110" y="330">工作队驻地 · 出发</text><text x="520" y="214">途经东阳关 · 入镇道</text><text x="950" y="108">太行山麓 · 驻村到岗</text>
+        </g>
+      </svg>
+      <div class="route-legend">▲ 路线自县城经东阳关镇抵达枣畔村 · 全程约 22 公里（示意）</div>
+    </div>
+  </section>
+
+  <section class="wrap">
+    <div class="sec-title reveal"><div class="en">Four Seasons</div><h2>四季枣畔</h2><p>太行山麓的水墨长卷，随季节流转</p></div>
+    <div class="seasons" id="zpSeasons"></div>
+  </section>
+
+  <section class="wrap">
+    <div class="sec-title reveal"><div class="en">Exhibition Halls</div><h2>展馆四厅</h2><p>走进枣畔帮扶工作的每一个侧面</p></div>
+    <div class="entry" id="zpEntry"></div>
+  </section>
+
+  <section class="wrap">
+    <div class="epilogue reveal">
+      <div class="q">"从县城到枣畔村的路，我们走了无数遍；<br>从陌生到信任的路，我们走了整整两年。"</div>
+      <div class="s">枣畔·纪事 · 驻村帮扶工作数字展馆 · 2024.07 — 至今</div>
+    </div>
+  </section>
+</main>
+
+<footer id="zpFooter" class="footer"></footer>
+
+<script src="assets/js/data/site.js"></script>
+<script src="assets/js/data/stages.js"></script>
+<script src="assets/js/art.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function () {
+  var S = window.ZP;
+
+  /* 数据看板 */
+  document.getElementById('zpStats').innerHTML = S.stats.map(function (s, i) {
+    return '<div class="stat reveal" style="transition-delay:' + (i * 90) + 'ms"><div class="v">' + s.value + '<i>' + s.unit + '</i></div><div class="l">' + s.label + '</div><div class="n">' + s.note + '</div></div>';
+  }).join('');
+
+  /* 四季 */
+  var seasons = [
+    ['season-spring.png', '春耕'], ['season-summer.png', '夏耘'],
+    ['season-autumn.png', '秋收'], ['season-winter.png', '冬雪']
+  ];
+  document.getElementById('zpSeasons').innerHTML = seasons.map(function (s, i) {
+    return '<a class="season reveal" style="transition-delay:' + (i * 90) + 'ms" href="jishi.html"><img src="assets/img/' + s[0] + '" alt="' + s[1] + '"><div class="cap">' + s[1] + '</div></a>';
+  }).join('');
+
+  /* 展馆四厅 */
+  var entry = [
+    ['帮扶纪事', '八阶段 · 纵向时间轴 · 驻村工作全记录', 'jishi.html', '壹', 'e1'],
+    ['互动地图', '144 户户位 · 监测户户况卡片 · 帮扶台账', 'ditu.html', '贰', 'e2'],
+    ['数字档案', '40 项帮扶记录 · 360° 翻转卡片 · 无限滚动', 'dang-an.html', '叁', 'e3'],
+    ['帮扶档案馆', '8000 字工作纪实讲义 · 20 页汇报 PPT · 在线预览', 'danganguan.html', '肆', 'e4']
+  ];
+  document.getElementById('zpEntry').innerHTML = entry.map(function (e) {
+    return '<a class="entry-card ' + e[4] + ' reveal" href="' + e[2] + '"><div class="ic">' + e[3] + '</div><h3>' + e[0] + '</h3><p>' + e[1] + '</p></a>';
+  }).join('');
+
+  /* 视差 */
+  var inner = document.getElementById('heroInner');
+  var bgs = S.$$('.hero-bg');
+  window.addEventListener('scroll', function () {
+    var y = window.scrollY;
+    if (y < window.innerHeight * 1.2) {
+      inner.style.transform = 'translateY(' + y * 0.32 + 'px)';
+      bgs.forEach(function (b) { b.style.transform = 'translateY(' + y * 0.16 + 'px)'; });
+    }
+  }, { passive: true });
+
+  /* 粒子：炊烟 + 微光 */
+  (function () {
+    var cv = document.getElementById('zpParticles'), ctx = cv.getContext('2d');
+    function size() { cv.width = cv.clientWidth; cv.height = cv.clientHeight; }
+    size(); window.addEventListener('resize', size);
+    var smoke = [], glow = [], N = 26, G = 46;
+    for (var i = 0; i < N; i++) smoke.push({ x: Math.random(), y: Math.random(), r: 24 + Math.random() * 46, s: 0.0012 + Math.random() * 0.002, o: 0.03 + Math.random() * 0.05, drift: (Math.random() - 0.5) * 0.0006 });
+    for (var j = 0; j < G; j++) glow.push({ x: Math.random(), y: Math.random(), r: 0.6 + Math.random() * 1.4, s: 0.0003 + Math.random() * 0.0008, o: 0.10 + Math.random() * 0.22 });
+    function tick() {
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      smoke.forEach(function (p) {
+        p.y -= p.s; p.x += p.drift; if (p.y < -0.1) { p.y = 1.05; p.x = Math.random(); }
+        var g = ctx.createRadialGradient(p.x * cv.width, p.y * cv.height, 0, p.x * cv.width, p.y * cv.height, p.r);
+        g.addColorStop(0, 'rgba(240,238,226,' + p.o + ')'); g.addColorStop(1, 'rgba(240,238,226,0)');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x * cv.width, p.y * cv.height, p.r, 0, 7); ctx.fill();
+      });
+      glow.forEach(function (p) {
+        p.y -= p.s; p.x += Math.sin(p.y * 30) * 0.0002; if (p.y < -0.05) { p.y = 1.02; p.x = Math.random(); }
+        ctx.fillStyle = 'rgba(238,216,150,' + p.o + ')';
+        ctx.beginPath(); ctx.arc(p.x * cv.width, p.y * cv.height, p.r, 0, 7); ctx.fill();
+      });
+      requestAnimationFrame(tick);
+    }
+    tick();
+  })();
+
+  /* 路线绘制动画 */
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('done'); io.unobserve(en.target); } });
+  }, { threshold: 0.35 });
+  io.observe(document.getElementById('routeBox'));
+})();
+</script>
+</body>
+</html>
